@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parking Lot Management System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      background: #f5f5f5;
+      border-bottom: 2px solid #ddd;
+      overflow-x: auto;
+    }
+
+    .tab-button {
+      padding: 15px 25px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: #666;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .tab-button:hover {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .tab-button.active {
+      background: white;
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 30px;
+      animation: fadeIn 0.3s;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button.delete {
+      background: #e74c3c;
+    }
+
+    button.delete:hover {
+      box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+    }
+
+    button.update {
+      background: #3498db;
+    }
+
+    button.update:hover {
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .data-list {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .data-item {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border-left: 4px solid #667eea;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .data-item-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .data-item-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .error {
+      color: #e74c3c;
+      padding: 10px;
+      background: #fee;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .success {
+      color: #27ae60;
+      padding: 10px;
+      background: #efe;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚗 Parking Lot Management System</h1>
+      <p>Manage your parking lot operations efficiently</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTab('lots')">Lots</button>
+      <button class="tab-button" onclick="showTab('users')">Users</button>
+      <button class="tab-button" onclick="showTab('employees')">Employees</button>
+      <button class="tab-button" onclick="showTab('grids')">Grids</button>
+      <button class="tab-button" onclick="showTab('slots')">Slots</button>
+      <button class="tab-button" onclick="showTab('vehicles')">Vehicles</button>
+      <button class="tab-button" onclick="showTab('rates')">Rates</button>
+      <button class="tab-button" onclick="showTab('bookings')">Bookings</button>
+      <button class="tab-button" onclick="showTab('payments')">Payments</button>
+    </div>
+
+    <div id="lots" class="tab-content active">
+      <div class="section">
+        <h2>Parking Lots</h2>
+        <div class="form-group">
+          <input type="text" id="lot_location" placeholder="Location" />
+          <input type="number" id="lot_total_grids" placeholder="Total Grids" />
+          <input type="number" id="lot_slots_per_grid" placeholder="Slots per Grid" />
+          <button onclick="addLot()">Add Lot</button>
+        </div>
+        <div id="lots-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="users" class="tab-content">
+      <div class="section">
+        <h2>Users</h2>
+        <div class="form-group">
+          <input type="text" id="user_cname" placeholder="Name" />
+          <input type="text" id="user_cphone" placeholder="Phone" />
+          <input type="text" id="user_cphone_alt" placeholder="Alternate Phone" />
+          <button onclick="addUser()">Add User</button>
+        </div>
+        <div id="users-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="employees" class="tab-content">
+      <div class="section">
+        <h2>Employees</h2>
+        <div class="form-group">
+          <input type="number" id="emp_lot_id" placeholder="Lot ID" />
+          <input type="time" id="emp_shift_time" placeholder="Shift Time" />
+          <input type="number" id="emp_supervisor_id" placeholder="Supervisor ID (optional)" />
+          <input type="number" id="emp_attendants_supervising" placeholder="Attendants Supervising" />
+          <select id="emp_role">
+            <option value="">Select Role</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Attendant">Attendant</option>
+            <option value="Cashier">Cashier</option>
+          </select>
+          <input type="text" id="emp_ename" placeholder="Employee Name" />
+          <input type="text" id="emp_ephone" placeholder="Phone" />
+          <input type="text" id="emp_ephone_alt" placeholder="Alternate Phone" />
+          <button onclick="addEmployee()">Add Employee</button>
+        </div>
+        <div id="employees-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="grids" class="tab-content">
+      <div class="section">
+        <h2>Grids</h2>
+        <div class="form-group">
+          <input type="number" id="grid_lot_id" placeholder="Lot ID" />
+          <input type="number" id="grid_number" placeholder="Grid Number" />
+          <input type="number" id="grid_attendant_id" placeholder="Attendant ID (optional)" />
+          <button onclick="addGrid()">Add Grid</button>
+        </div>
+        <div id="grids-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="slots" class="tab-content">
+      <div class="section">
+        <h2>Parking Slots</h2>
+        <div class="form-group">
+          <input type="number" id="slot_grid_id" placeholder="Grid ID" />
+          <input type="number" id="slot_number" placeholder="Slot Number" />
+          <input type="text" id="slot_code" placeholder="Slot Code" />
+          <select id="slot_vehicle_type">
+            <option value="">Vehicle Type (optional)</option>
+            <option value="Car">Car</option>
+            <option value="Motorcycle">Motorcycle</option>
+            <option value="Truck">Truck</option>
+          </select>
+          <div class="checkbox-group">
+            <input type="checkbox" id="slot_is_occupied" />
+            <label for="slot_is_occupied">Is Occupied</label>
+          </div>
+          <button onclick="addSlot()">Add Slot</button>
+        </div>
+        <div id="slots-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="vehicles" class="tab-content">
+      <div class="section">
+        <h2>Vehicles</h2>
+        <div class="form-group">
+          <input type="number" id="vehicle_user_id" placeholder="User ID" />
+          <input type="text" id="vehicle_license_plate" placeholder="License Plate" />
+          <select id="vehicle_type">
+            <option value="">Select Vehicle Type</option>
+            <option value="Car">Car</option>
+            <option value="Motorcycle">Motorcycle</option>
+            <option value="Truck">Truck</option>
+          </select>
+          <button onclick="addVehicle()">Add Vehicle</button>
+        </div>
+        <div id="vehicles-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="rates" class="tab-content">
+      <div class="section">
+        <h2>Parking Rates</h2>
+        <div class="form-group">
+          <input type="number" step="0.01" id="rate_hourly" placeholder="Hourly Rate" />
+          <input type="number" step="0.01" id="rate_daily" placeholder="Daily Rate" />
+          <input type="number" step="0.01" id="rate_weekly" placeholder="Weekly Rate" />
+          <input type="number" step="0.01" id="rate_monthly_1" placeholder="1 Month Rate" />
+          <input type="number" step="0.01" id="rate_monthly_3" placeholder="3 Months Rate" />
+          <input type="number" step="0.01" id="rate_monthly_6" placeholder="6 Months Rate" />
+          <input type="number" step="0.01" id="rate_yearly" placeholder="Yearly Rate" />
+          <button onclick="addRate()">Add Rate</button>
+        </div>
+        <div id="rates-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="bookings" class="tab-content">
+      <div class="section">
+        <h2>Bookings</h2>
+        <div class="form-group">
+          <input type="number" id="booking_slot_id" placeholder="Slot ID" />
+          <input type="number" id="booking_user_id" placeholder="User ID" />
+          <input type="number" id="booking_vehicle_id" placeholder="Vehicle ID" />
+          <input type="datetime-local" id="booking_start_time" placeholder="Start Time" />
+          <input type="datetime-local" id="booking_end_time" placeholder="End Time" />
+          <input type="number" id="booking_duration" placeholder="Duration (minutes)" />
+          <input type="number" id="booking_rate_id" placeholder="Rate ID (optional)" />
+          <input type="number" step="0.01" id="booking_total_amt" placeholder="Total Amount" />
+          <button onclick="addBooking()">Add Booking</button>
+        </div>
+        <div id="bookings-list" class="data-list"></div>
+      </div>
+    </div>
+
+    <div id="payments" class="tab-content">
+      <div class="section">
+        <h2>Payments</h2>
+        <div class="form-group">
+          <input type="number" id="payment_booking_id" placeholder="Booking ID" />
+          <input type="date" id="payment_date" placeholder="Payment Date" />
+          <input type="time" id="payment_time" placeholder="Payment Time" />
+          <input type="number" step="0.01" id="payment_amount" placeholder="Amount" />
+          <select id="payment_method">
+            <option value="">Payment Method (optional)</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="UPI">UPI</option>
+            <option value="Online">Online</option>
+          </select>
+          <select id="payment_status">
+            <option value="">Status (optional)</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+          </select>
+          <button onclick="addPayment()">Add Payment</button>
+        </div>
+        <div id="payments-list" class="data-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3001';
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Refresh data when switching tabs
+      if (tabName === 'lots') fetchLots();
+      else if (tabName === 'users') fetchUsers();
+      else if (tabName === 'employees') fetchEmployees();
+      else if (tabName === 'grids') fetchGrids();
+      else if (tabName === 'slots') fetchSlots();
+      else if (tabName === 'vehicles') fetchVehicles();
+      else if (tabName === 'rates') fetchRates();
+      else if (tabName === 'bookings') fetchBookings();
+      else if (tabName === 'payments') fetchPayments();
+    }
+
+    // Lots
+    function fetchLots() {
+      fetch(`${API_BASE}/lots`).then(r => r.json()).then(data => {
+        const div = document.getElementById('lots-list');
+        div.innerHTML = data.map(lot => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>${lot.location}</strong> - ${lot.total_grids} grids, ${lot.slots_per_grid} slots/grid
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateLot(${lot.lot_id})">Update</button>
+              <button class="delete" onclick="deleteLot(${lot.lot_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addLot() {
+      const data = {
+        location: document.getElementById('lot_location').value,
+        total_grids: parseInt(document.getElementById('lot_total_grids').value),
+        slots_per_grid: parseInt(document.getElementById('lot_slots_per_grid').value)
+      };
+      fetch(`${API_BASE}/lots`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchLots();
+        document.getElementById('lot_location').value = '';
+        document.getElementById('lot_total_grids').value = '';
+        document.getElementById('lot_slots_per_grid').value = '';
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteLot(id) {
+      if (confirm('Delete this lot?')) {
+        fetch(`${API_BASE}/lots/${id}`, { method: 'DELETE' }).then(() => fetchLots());
+      }
+    }
+
+    function updateLot(id) {
+      const location = prompt('Location:', '');
+      const total_grids = prompt('Total Grids:', '');
+      const slots_per_grid = prompt('Slots per Grid:', '');
+      if (location && total_grids && slots_per_grid) {
+        fetch(`${API_BASE}/lots/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ location, total_grids: parseInt(total_grids), slots_per_grid: parseInt(slots_per_grid) })
+        }).then(() => fetchLots());
+      }
+    }
+
+    // Users
+    function fetchUsers() {
+      fetch(`${API_BASE}/users`).then(r => r.json()).then(data => {
+        const div = document.getElementById('users-list');
+        div.innerHTML = data.map(user => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>${user.cname}</strong> - ${user.cphone} ${user.cphone_alt ? '(' + user.cphone_alt + ')' : ''}
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateUser(${user.user_id})">Update</button>
+              <button class="delete" onclick="deleteUser(${user.user_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addUser() {
+      const data = {
+        cname: document.getElementById('user_cname').value,
+        cphone: document.getElementById('user_cphone').value,
+        cphone_alt: document.getElementById('user_cphone_alt').value || null
+      };
+      fetch(`${API_BASE}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchUsers();
+        document.getElementById('user_cname').value = '';
+        document.getElementById('user_cphone').value = '';
+        document.getElementById('user_cphone_alt').value = '';
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteUser(id) {
+      if (confirm('Delete this user?')) {
+        fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' }).then(() => fetchUsers());
+      }
+    }
+
+    function updateUser(id) {
+      const cname = prompt('Name:', '');
+      const cphone = prompt('Phone:', '');
+      const cphone_alt = prompt('Alternate Phone (optional):', '');
+      if (cname && cphone) {
+        fetch(`${API_BASE}/users/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cname, cphone, cphone_alt: cphone_alt || null })
+        }).then(() => fetchUsers());
+      }
+    }
+
+    // Employees
+    function fetchEmployees() {
+      fetch(`${API_BASE}/employees`).then(r => r.json()).then(data => {
+        const div = document.getElementById('employees-list');
+        div.innerHTML = data.map(emp => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>${emp.ename}</strong> - ${emp.role} (Lot: ${emp.lot_id}, Phone: ${emp.ephone})
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateEmployee(${emp.emp_id})">Update</button>
+              <button class="delete" onclick="deleteEmployee(${emp.emp_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addEmployee() {
+      const data = {
+        lot_id: parseInt(document.getElementById('emp_lot_id').value),
+        shift_time: document.getElementById('emp_shift_time').value || null,
+        supervisor_id: document.getElementById('emp_supervisor_id').value ? parseInt(document.getElementById('emp_supervisor_id').value) : null,
+        attendants_supervising: document.getElementById('emp_attendants_supervising').value ? parseInt(document.getElementById('emp_attendants_supervising').value) : null,
+        role: document.getElementById('emp_role').value,
+        ename: document.getElementById('emp_ename').value,
+        ephone: document.getElementById('emp_ephone').value,
+        ephone_alt: document.getElementById('emp_ephone_alt').value || null
+      };
+      fetch(`${API_BASE}/employees`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchEmployees();
+        document.querySelectorAll('#employees .form-group input, #employees .form-group select').forEach(el => el.value = '');
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteEmployee(id) {
+      if (confirm('Delete this employee?')) {
+        fetch(`${API_BASE}/employees/${id}`, { method: 'DELETE' }).then(() => fetchEmployees());
+      }
+    }
+
+    function updateEmployee(id) {
+      // Simplified for now - could create a form modal
+      alert('Update functionality - please use form fields and modify code for full update form');
+    }
+
+    // Grids
+    function fetchGrids() {
+      fetch(`${API_BASE}/grids`).then(r => r.json()).then(data => {
+        const div = document.getElementById('grids-list');
+        div.innerHTML = data.map(grid => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>Grid #${grid.grid_number}</strong> - Lot ID: ${grid.lot_id} ${grid.attendant_id ? '(Attendant: ' + grid.attendant_id + ')' : ''}
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateGrid(${grid.grid_id})">Update</button>
+              <button class="delete" onclick="deleteGrid(${grid.grid_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addGrid() {
+      const data = {
+        lot_id: parseInt(document.getElementById('grid_lot_id').value),
+        grid_number: parseInt(document.getElementById('grid_number').value),
+        attendant_id: document.getElementById('grid_attendant_id').value ? parseInt(document.getElementById('grid_attendant_id').value) : null
+      };
+      fetch(`${API_BASE}/grids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchGrids();
+        document.querySelectorAll('#grids .form-group input').forEach(el => el.value = '');
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteGrid(id) {
+      if (confirm('Delete this grid?')) {
+        fetch(`${API_BASE}/grids/${id}`, { method: 'DELETE' }).then(() => fetchGrids());
+      }
+    }
+
+    function updateGrid(id) {
+      const lot_id = prompt('Lot ID:', '');
+      const grid_number = prompt('Grid Number:', '');
+      const attendant_id = prompt('Attendant ID (optional):', '');
+      if (lot_id && grid_number) {
+        fetch(`${API_BASE}/grids/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lot_id: parseInt(lot_id), grid_number: parseInt(grid_number), attendant_id: attendant_id ? parseInt(attendant_id) : null })
+        }).then(() => fetchGrids());
+      }
+    }
+
+    // Slots
+    function fetchSlots() {
+      fetch(`${API_BASE}/slots`).then(r => r.json()).then(data => {
+        const div = document.getElementById('slots-list');
+        div.innerHTML = data.map(slot => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>${slot.slot_code}</strong> - Grid: ${slot.grid_id}, Slot: ${slot.slot_number} ${slot.vehicle_type ? '(' + slot.vehicle_type + ')' : ''} ${slot.is_occupied ? '🅿️ Occupied' : '✅ Available'}
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateSlot(${slot.slot_id})">Update</button>
+              <button class="delete" onclick="deleteSlot(${slot.slot_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addSlot() {
+      const data = {
+        grid_id: parseInt(document.getElementById('slot_grid_id').value),
+        slot_number: parseInt(document.getElementById('slot_number').value),
+        slot_code: document.getElementById('slot_code').value,
+        vehicle_type: document.getElementById('slot_vehicle_type').value || null,
+        is_occupied: document.getElementById('slot_is_occupied').checked
+      };
+      fetch(`${API_BASE}/slots`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchSlots();
+        document.querySelectorAll('#slots .form-group input, #slots .form-group select').forEach(el => {
+          if (el.type === 'checkbox') el.checked = false;
+          else el.value = '';
+        });
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteSlot(id) {
+      if (confirm('Delete this slot?')) {
+        fetch(`${API_BASE}/slots/${id}`, { method: 'DELETE' }).then(() => fetchSlots());
+      }
+    }
+
+    function updateSlot(id) {
+      alert('Update functionality - please use form fields and modify code for full update form');
+    }
+
+    // Vehicles
+    function fetchVehicles() {
+      fetch(`${API_BASE}/vehicles`).then(r => r.json()).then(data => {
+        const div = document.getElementById('vehicles-list');
+        div.innerHTML = data.map(vehicle => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>${vehicle.license_plate}</strong> - ${vehicle.vehicle_type} (User ID: ${vehicle.user_id})
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateVehicle(${vehicle.vehicle_id})">Update</button>
+              <button class="delete" onclick="deleteVehicle(${vehicle.vehicle_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addVehicle() {
+      const data = {
+        user_id: parseInt(document.getElementById('vehicle_user_id').value),
+        license_plate: document.getElementById('vehicle_license_plate').value,
+        vehicle_type: document.getElementById('vehicle_type').value
+      };
+      fetch(`${API_BASE}/vehicles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchVehicles();
+        document.querySelectorAll('#vehicles .form-group input, #vehicles .form-group select').forEach(el => el.value = '');
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteVehicle(id) {
+      if (confirm('Delete this vehicle?')) {
+        fetch(`${API_BASE}/vehicles/${id}`, { method: 'DELETE' }).then(() => fetchVehicles());
+      }
+    }
+
+    function updateVehicle(id) {
+      const user_id = prompt('User ID:', '');
+      const license_plate = prompt('License Plate:', '');
+      const vehicle_type = prompt('Vehicle Type:', '');
+      if (user_id && license_plate && vehicle_type) {
+        fetch(`${API_BASE}/vehicles/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: parseInt(user_id), license_plate, vehicle_type })
+        }).then(() => fetchVehicles());
+      }
+    }
+
+    // Rates
+    function fetchRates() {
+      fetch(`${API_BASE}/rates`).then(r => r.json()).then(data => {
+        const div = document.getElementById('rates-list');
+        div.innerHTML = data.map(rate => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>Rate #${rate.rate_id}</strong> - Hourly: $${rate.hourly || 'N/A'}, Daily: $${rate.daily || 'N/A'}, Weekly: $${rate.weekly || 'N/A'}
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateRate(${rate.rate_id})">Update</button>
+              <button class="delete" onclick="deleteRate(${rate.rate_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addRate() {
+      const data = {
+        hourly: document.getElementById('rate_hourly').value ? parseFloat(document.getElementById('rate_hourly').value) : null,
+        daily: document.getElementById('rate_daily').value ? parseFloat(document.getElementById('rate_daily').value) : null,
+        weekly: document.getElementById('rate_weekly').value ? parseFloat(document.getElementById('rate_weekly').value) : null,
+        monthly_1: document.getElementById('rate_monthly_1').value ? parseFloat(document.getElementById('rate_monthly_1').value) : null,
+        monthly_3: document.getElementById('rate_monthly_3').value ? parseFloat(document.getElementById('rate_monthly_3').value) : null,
+        monthly_6: document.getElementById('rate_monthly_6').value ? parseFloat(document.getElementById('rate_monthly_6').value) : null,
+        yearly: document.getElementById('rate_yearly').value ? parseFloat(document.getElementById('rate_yearly').value) : null
+      };
+      fetch(`${API_BASE}/rates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchRates();
+        document.querySelectorAll('#rates .form-group input').forEach(el => el.value = '');
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteRate(id) {
+      if (confirm('Delete this rate?')) {
+        fetch(`${API_BASE}/rates/${id}`, { method: 'DELETE' }).then(() => fetchRates());
+      }
+    }
+
+    function updateRate(id) {
+      alert('Update functionality - please use form fields and modify code for full update form');
+    }
+
+    // Bookings
+    function fetchBookings() {
+      fetch(`${API_BASE}/bookings`).then(r => r.json()).then(data => {
+        const div = document.getElementById('bookings-list');
+        div.innerHTML = data.map(booking => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>Booking #${booking.booking_id}</strong> - Slot: ${booking.slot_id}, Vehicle: ${booking.vehicle_id}, User: ${booking.user_id}<br>
+              From: ${new Date(booking.start_time).toLocaleString()} To: ${new Date(booking.end_time).toLocaleString()}<br>
+              Amount: $${booking.total_amt || 'N/A'}
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updateBooking(${booking.booking_id})">Update</button>
+              <button class="delete" onclick="deleteBooking(${booking.booking_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addBooking() {
+      const startTime = document.getElementById('booking_start_time').value;
+      const endTime = document.getElementById('booking_end_time').value;
+      const data = {
+        slot_id: parseInt(document.getElementById('booking_slot_id').value),
+        user_id: parseInt(document.getElementById('booking_user_id').value),
+        vehicle_id: parseInt(document.getElementById('booking_vehicle_id').value),
+        start_time: startTime ? new Date(startTime).toISOString().slice(0, 19).replace('T', ' ') : null,
+        end_time: endTime ? new Date(endTime).toISOString().slice(0, 19).replace('T', ' ') : null,
+        duration: document.getElementById('booking_duration').value ? parseInt(document.getElementById('booking_duration').value) : null,
+        rate_id: document.getElementById('booking_rate_id').value ? parseInt(document.getElementById('booking_rate_id').value) : null,
+        total_amt: document.getElementById('booking_total_amt').value ? parseFloat(document.getElementById('booking_total_amt').value) : null
+      };
+      fetch(`${API_BASE}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchBookings();
+        document.querySelectorAll('#bookings .form-group input').forEach(el => el.value = '');
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deleteBooking(id) {
+      if (confirm('Delete this booking?')) {
+        fetch(`${API_BASE}/bookings/${id}`, { method: 'DELETE' }).then(() => fetchBookings());
+      }
+    }
+
+    function updateBooking(id) {
+      alert('Update functionality - please use form fields and modify code for full update form');
+    }
+
+    // Payments
+    function fetchPayments() {
+      fetch(`${API_BASE}/payments`).then(r => r.json()).then(data => {
+        const div = document.getElementById('payments-list');
+        div.innerHTML = data.map(payment => `
+          <div class="data-item">
+            <div class="data-item-info">
+              <strong>Payment #${payment.payment_id}</strong> - Booking: ${payment.booking_id}, Amount: $${payment.p_amount}<br>
+              Date: ${payment.p_date} ${payment.p_time}, Method: ${payment.method || 'N/A'}, Status: ${payment.status || 'N/A'}
+            </div>
+            <div class="data-item-actions">
+              <button class="update" onclick="updatePayment(${payment.payment_id})">Update</button>
+              <button class="delete" onclick="deletePayment(${payment.payment_id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      }).catch(err => div.innerHTML = `<div class="error">Error: ${err.message}</div>`);
+    }
+
+    function addPayment() {
+      const data = {
+        booking_id: parseInt(document.getElementById('payment_booking_id').value),
+        p_date: document.getElementById('payment_date').value,
+        p_time: document.getElementById('payment_time').value,
+        p_amount: parseFloat(document.getElementById('payment_amount').value),
+        method: document.getElementById('payment_method').value || null,
+        status: document.getElementById('payment_status').value || null
+      };
+      fetch(`${API_BASE}/payments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(() => {
+        fetchPayments();
+        document.querySelectorAll('#payments .form-group input, #payments .form-group select').forEach(el => el.value = '');
+      }).catch(err => alert('Error: ' + err.message));
+    }
+
+    function deletePayment(id) {
+      if (confirm('Delete this payment?')) {
+        fetch(`${API_BASE}/payments/${id}`, { method: 'DELETE' }).then(() => fetchPayments());
+      }
+    }
+
+    function updatePayment(id) {
+      alert('Update functionality - please use form fields and modify code for full update form');
+    }
+
+    // Initialize
+    fetchLots();
+  </script>
+</body>
+</html>
