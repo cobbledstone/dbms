@@ -261,9 +261,18 @@ app.delete('/vehicles/:vehicle_id', (req, res) => {
 
 app.post('/bookings', (req, res) => {
   const { slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt } = req.body;
+  
+  // Validate required fields
+  if (!slot_id || !user_id || !vehicle_id || !start_time || !end_time) {
+    return res.status(400).json({ error: 'Missing required fields: slot_id, user_id, vehicle_id, start_time, end_time' });
+  }
+  
   const query = 'INSERT INTO Bookings (slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt) VALUES (?, ?, ?, ?, ?, ?, ?)';
   db.query(query, [slot_id, user_id, vehicle_id, start_time, end_time, duration || null, total_amt || null], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error('Database error when adding booking:', err);
+      return res.status(500).json({ error: 'Database error: ' + err.message });
+    }
     res.json({ booking_id: result.insertId, slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt });
   });
 });
@@ -277,10 +286,10 @@ app.get('/bookings', (req, res) => {
 
 app.put('/bookings/:booking_id', (req, res) => {
   const { booking_id } = req.params;
-  const { slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt } = req.body;
+  const { slot_id, user_id, vehicle_id, duration, total_amt } = req.body;
   db.query(
-    'UPDATE Bookings SET slot_id = ?, user_id = ?, vehicle_id = ?, start_time = ?, end_time = ?, duration = ?, total_amt = ? WHERE booking_id = ?',
-    [slot_id, user_id, vehicle_id, start_time, end_time, duration || null, total_amt || null, booking_id],
+    'UPDATE Bookings SET slot_id = ?, user_id = ?, vehicle_id = ?, duration = ?, total_amt = ? WHERE booking_id = ?',
+    [slot_id, user_id, vehicle_id, duration || null, total_amt || null, booking_id],
     err => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: 'Booking updated' });
@@ -298,7 +307,7 @@ app.delete('/bookings/:booking_id', (req, res) => {
 
 app.post('/payments', (req, res) => {
   const { booking_id, p_date, p_time, p_amount, method, status } = req.body;
-  const query = 'INSERT INTO Payments (booking_id, p_date, p_time, p_amount, method, status) VALUES (?, ?, ?, ?, ?, ?)';
+  const query = 'INSERT INTO Payments (booking_id,k p_time, p_amount, method, status) VALUES (?, ?, ?, ?, ?, ?)';
   db.query(query, [booking_id, p_date, p_time, p_amount, method || null, status || null], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ payment_id: result.insertId, booking_id, p_date, p_time, p_amount, method, status });

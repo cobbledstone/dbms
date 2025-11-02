@@ -342,10 +342,8 @@
           <input type="number" id="booking_slot_id" placeholder="Slot ID" />
           <input type="number" id="booking_user_id" placeholder="User ID" />
           <input type="number" id="booking_vehicle_id" placeholder="Vehicle ID" />
-          <input type="datetime-local" id="booking_start_time" placeholder="Start Time" />
-          <input type="datetime-local" id="booking_end_time" placeholder="End Time" />
           <input type="number" id="booking_duration" placeholder="Duration (minutes)" />
-          <input type="number" step="0.01" id="booking_total_amt" placeholder="Total Amount" />
+          <input type="number" step="0.01" id="booking_total_amt" placeholder="Total Amount (₹)" />
           <button onclick="addBooking()">Add Booking</button>
         </div>
         <div id="bookings-list" class="data-list"></div>
@@ -359,7 +357,7 @@
           <input type="number" id="payment_booking_id" placeholder="Booking ID" />
           <input type="date" id="payment_date" placeholder="Payment Date" />
           <input type="time" id="payment_time" placeholder="Payment Time" />
-          <input type="number" step="0.01" id="payment_amount" placeholder="Amount" />
+          <input type="number" step="0.01" id="payment_amount" placeholder="Amount (₹)" />
           <select id="payment_method">
             <option value="">Payment Method (optional)</option>
             <option value="Cash">Cash</option>
@@ -823,8 +821,7 @@
           <div class="data-item">
             <div class="data-item-info">
               <strong>Booking #${booking.booking_id}</strong> - Slot: ${booking.slot_id}, Vehicle: ${booking.vehicle_id}, User: ${booking.user_id}<br>
-              From: ${new Date(booking.start_time).toLocaleString()} To: ${new Date(booking.end_time).toLocaleString()}<br>
-              Amount: $${booking.total_amt || 'N/A'}
+              Amount: ₹${booking.total_amt || 'N/A'}
             </div>
             <div class="data-item-actions">
               <button class="update" onclick="updateBooking(${booking.booking_id})">Update</button>
@@ -836,17 +833,19 @@
     }
 
     function addBooking() {
-      const startTime = document.getElementById('booking_start_time').value;
-      const endTime = document.getElementById('booking_end_time').value;
       const data = {
         slot_id: parseInt(document.getElementById('booking_slot_id').value),
         user_id: parseInt(document.getElementById('booking_user_id').value),
         vehicle_id: parseInt(document.getElementById('booking_vehicle_id').value),
-        start_time: startTime ? new Date(startTime).toISOString().slice(0, 19).replace('T', ' ') : null,
-        end_time: endTime ? new Date(endTime).toISOString().slice(0, 19).replace('T', ' ') : null,
         duration: document.getElementById('booking_duration').value ? parseInt(document.getElementById('booking_duration').value) : null,
         total_amt: document.getElementById('booking_total_amt').value ? parseFloat(document.getElementById('booking_total_amt').value) : null
       };
+     
+      if (isNaN(data.slot_id) || isNaN(data.user_id) || isNaN(data.vehicle_id)) {
+        alert('Please enter valid Slot ID, User ID, and Vehicle ID');
+        return;
+      }
+      
       fetch(`${API_BASE}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -885,7 +884,7 @@
         div.innerHTML = data.map(payment => `
           <div class="data-item">
             <div class="data-item-info">
-              <strong>Payment #${payment.payment_id}</strong> - Booking: ${payment.booking_id}, Amount: $${payment.p_amount}<br>
+              <strong>Payment #${payment.payment_id}</strong> - Booking: ${payment.booking_id}, Amount: ₹${payment.p_amount}<br>
               Date: ${payment.p_date} ${payment.p_time}, Method: ${payment.method || 'N/A'}, Status: ${payment.status || 'N/A'}
             </div>
             <div class="data-item-actions">
