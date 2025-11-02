@@ -28,8 +28,6 @@ db.connect(err => {
   db.query('SELECT * FROM Users LIMIT 1', (err, results) => {
     if (err) {
       console.error('Error querying Users table:', err);
-    } else {
-      console.log('Successfully connected to Users table');
     }
   });
 });
@@ -113,7 +111,6 @@ app.delete('/users/:user_id', (req, res) => {
   });
 });
 
-// Employee endpoints
 app.post('/employees', (req, res) => {
   const { lot_id, shift_time, supervisor_id, attendants_supervising, role, ename, ephone, ephone_alt } = req.body;
   const query = 'INSERT INTO Employee (lot_id, shift_time, supervisor_id, attendants_supervising, role, ename, ephone, ephone_alt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
@@ -151,7 +148,6 @@ app.delete('/employees/:emp_id', (req, res) => {
   });
 });
 
-// Grid endpoints
 app.post('/grids', (req, res) => {
   const { lot_id, grid_number, attendant_id } = req.body;
   const query = 'INSERT INTO Grids (lot_id, grid_number, attendant_id) VALUES (?, ?, ?)';
@@ -189,7 +185,6 @@ app.delete('/grids/:grid_id', (req, res) => {
   });
 });
 
-// Slot endpoints
 app.post('/slots', (req, res) => {
   const { grid_id, slot_number, slot_code, vehicle_type, is_occupied } = req.body;
   const query = 'INSERT INTO Slots (grid_id, slot_number, slot_code, vehicle_type, is_occupied) VALUES (?, ?, ?, ?, ?)';
@@ -227,45 +222,6 @@ app.delete('/slots/:slot_id', (req, res) => {
   });
 });
 
-// Rate endpoints
-app.post('/rates', (req, res) => {
-  const { hourly, daily, weekly, monthly_1, monthly_3, monthly_6, yearly } = req.body;
-  const query = 'INSERT INTO Rates (hourly, daily, weekly, monthly_1, monthly_3, monthly_6, yearly) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  db.query(query, [hourly || null, daily || null, weekly || null, monthly_1 || null, monthly_3 || null, monthly_6 || null, yearly || null], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ rate_id: result.insertId, hourly, daily, weekly, monthly_1, monthly_3, monthly_6, yearly });
-  });
-});
-
-app.get('/rates', (req, res) => {
-  db.query('SELECT * FROM Rates', (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
-});
-
-app.put('/rates/:rate_id', (req, res) => {
-  const { rate_id } = req.params;
-  const { hourly, daily, weekly, monthly_1, monthly_3, monthly_6, yearly } = req.body;
-  db.query(
-    'UPDATE Rates SET hourly = ?, daily = ?, weekly = ?, monthly_1 = ?, monthly_3 = ?, monthly_6 = ?, yearly = ? WHERE rate_id = ?',
-    [hourly || null, daily || null, weekly || null, monthly_1 || null, monthly_3 || null, monthly_6 || null, yearly || null, rate_id],
-    err => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Rate updated' });
-    }
-  );
-});
-
-app.delete('/rates/:rate_id', (req, res) => {
-  const { rate_id } = req.params;
-  db.query('DELETE FROM Rates WHERE rate_id = ?', [rate_id], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Rate deleted' });
-  });
-});
-
-// Vehicle endpoints
 app.post('/vehicles', (req, res) => {
   const { user_id, license_plate, vehicle_type } = req.body;
   const query = 'INSERT INTO Vehicles (user_id, license_plate, vehicle_type) VALUES (?, ?, ?)';
@@ -303,13 +259,12 @@ app.delete('/vehicles/:vehicle_id', (req, res) => {
   });
 });
 
-// Booking endpoints
 app.post('/bookings', (req, res) => {
-  const { slot_id, user_id, vehicle_id, start_time, end_time, duration, rate_id, total_amt } = req.body;
-  const query = 'INSERT INTO Bookings (slot_id, user_id, vehicle_id, start_time, end_time, duration, rate_id, total_amt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-  db.query(query, [slot_id, user_id, vehicle_id, start_time, end_time, duration || null, rate_id || null, total_amt || null], (err, result) => {
+  const { slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt } = req.body;
+  const query = 'INSERT INTO Bookings (slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  db.query(query, [slot_id, user_id, vehicle_id, start_time, end_time, duration || null, total_amt || null], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ booking_id: result.insertId, slot_id, user_id, vehicle_id, start_time, end_time, duration, rate_id, total_amt });
+    res.json({ booking_id: result.insertId, slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt });
   });
 });
 
@@ -322,10 +277,10 @@ app.get('/bookings', (req, res) => {
 
 app.put('/bookings/:booking_id', (req, res) => {
   const { booking_id } = req.params;
-  const { slot_id, user_id, vehicle_id, start_time, end_time, duration, rate_id, total_amt } = req.body;
+  const { slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt } = req.body;
   db.query(
-    'UPDATE Bookings SET slot_id = ?, user_id = ?, vehicle_id = ?, start_time = ?, end_time = ?, duration = ?, rate_id = ?, total_amt = ? WHERE booking_id = ?',
-    [slot_id, user_id, vehicle_id, start_time, end_time, duration || null, rate_id || null, total_amt || null, booking_id],
+    'UPDATE Bookings SET slot_id = ?, user_id = ?, vehicle_id = ?, start_time = ?, end_time = ?, duration = ?, total_amt = ? WHERE booking_id = ?',
+    [slot_id, user_id, vehicle_id, start_time, end_time, duration || null, total_amt || null, booking_id],
     err => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: 'Booking updated' });
@@ -341,7 +296,6 @@ app.delete('/bookings/:booking_id', (req, res) => {
   });
 });
 
-// Payment endpoints
 app.post('/payments', (req, res) => {
   const { booking_id, p_date, p_time, p_amount, method, status } = req.body;
   const query = 'INSERT INTO Payments (booking_id, p_date, p_time, p_amount, method, status) VALUES (?, ?, ?, ?, ?, ?)';
@@ -379,13 +333,11 @@ app.delete('/payments/:payment_id', (req, res) => {
   });
 });
 
-// 404 handler - must be after all routes
 app.use((req, res) => {
   console.log(`404 - Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ error: `Route not found: ${req.method} ${req.url}` });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({ error: err.message || 'Internal server error' });
