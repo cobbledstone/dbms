@@ -238,8 +238,8 @@
         <h2>Parking Lots</h2>
         <div class="form-group">
           <input type="text" id="lot_location" placeholder="Location" />
-          <input type="number" id="lot_total_grids" placeholder="Total Grids" />
-          <input type="number" id="lot_slots_per_grid" placeholder="Slots per Grid" />
+          <input type="number" min="0" id="lot_total_grids" placeholder="Total Grids" />
+          <input type="number" min="0" id="lot_slots_per_grid" placeholder="Slots per Grid" />
           <button onclick="addLot()">Add Lot</button>
         </div>
         <div id="lots-list" class="data-list"></div>

@@ -262,7 +262,6 @@ app.delete('/vehicles/:vehicle_id', (req, res) => {
 app.post('/bookings', (req, res) => {
   const { slot_id, user_id, vehicle_id, start_time, end_time, duration, total_amt } = req.body;
   
-  // Validate required fields
   if (!slot_id || !user_id || !vehicle_id || !start_time || !end_time) {
     return res.status(400).json({ error: 'Missing required fields: slot_id, user_id, vehicle_id, start_time, end_time' });
   }
